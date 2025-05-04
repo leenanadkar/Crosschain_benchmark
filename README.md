@@ -24,32 +24,15 @@ The system simulates and measures gas consumption for different smart contract o
 
 ---
 
-## Project Structure
-
-crosschain-benchmark/
-├── contracts/ # Solidity contracts
-├── migrations/ # Truffle migration scripts
-├── test/
-│ └── gasBenchmark.test.js # Gas benchmarking logic
-├── gas-results.json # Auto-generated gas stats
-├── gasChart.html # Dashboard (Graph + Table + Export)
-├── README.md # Documentation (this file)
-└── truffle-config.js # Truffle settings
-
 
 ##  Setup Instructions
 
-### 1. Clone the repository
-
-git clone https://github.com/your-username/crosschain-benchmark.git
-cd crosschain-benchmark
-
-2. Install Truffle and dependencies
+1. Install Truffle and dependencies
 npm install -g truffle
 npm install
-3. Compile contracts
+2. Compile contracts
 truffle compile
-4. Run benchmark tests
+3. Run benchmark tests
 truffle test ./test/gasBenchmark.test.js
 This generates the gas-results.json file with execution gas data.
 
