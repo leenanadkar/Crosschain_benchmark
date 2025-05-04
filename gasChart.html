@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Contract Gas Profiling</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #chartContainer { max-width: 900px; margin: auto; }
+    canvas { margin-top: 20px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #444;
+      color: #fff;
+    }
+    td:first-child {
+      background-color: #ddd;
+      font-weight: bold;
+    }
+    caption {
+      caption-side: bottom;
+      font-weight: bold;
+      padding-top: 10px;
+    }
+
+    .export-btns {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .export-btns button {
+      margin: 0 10px;
+      padding: 10px 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="chartContainer">
+    <h2>Deployment vs Execution Gas Comparison</h2>
+    <canvas id="gasChart"></canvas>
+
+    <!-- Data Table -->
+    <div id="tableContainer"></div>
+
+    <!-- Export Buttons -->
+    <div class="export-btns">
+      <button onclick="downloadPNG()">Download as PNG</button>
+      <button onclick="downloadPDF()">Download as PDF</button>
+    </div>
+  </div>
+
+  <script>
+    async function drawChart() {
+      const response = await fetch('./gas-results.json');
+      const gasData = await response.json();
+
+      const labels = Object.keys(gasData);
+      const deployData = labels.map(name => gasData[name].deploymentGas);
+      const execData = labels.map(name => gasData[name].executionGas);
+
+      // Draw Chart
+      const ctx = document.getElementById("gasChart").getContext("2d");
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Deployment Gas",
+              data: deployData,
+              backgroundColor: "rgba(54, 162, 235, 0.6)"
+            },
+            {
+              label: "Execution Gas",
+              data: execData,
+              backgroundColor: "rgba(255, 99, 132, 0.6)"
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()} gas`
+              }
+            },
+            legend: {
+              position: 'top'
+            },
+            title: {
+              display: true,
+              text: 'Deployment vs Execution Gas Comparison',
+              font: { size: 20 }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "Gas Units"
+              }
+            }
+          }
+        }
+      });
+
+      // Build Table
+      const table = document.createElement("table");
+      const headers = ["Contract Type", "Deployment Gas", "Execution Gas", "% Execution vs Deployment"];
+      const headerRow = table.insertRow();
+      headers.forEach(h => {
+        const th = document.createElement("th");
+        th.innerText = h;
+        headerRow.appendChild(th);
+      });
+
+      labels.forEach((label, i) => {
+        const row = table.insertRow();
+        row.insertCell().innerText = label;
+        row.insertCell().innerText = deployData[i].toLocaleString();
+        row.insertCell().innerText = execData[i].toLocaleString();
+        const percent = ((execData[i] / deployData[i]) * 100).toFixed(2);
+        row.insertCell().innerText = percent + "%";
+      });
+
+      const caption = document.createElement("caption");
+      caption.innerHTML = "Table 6.2: Smart Contract Gas Profiling";
+      table.appendChild(caption);
+      document.getElementById("tableContainer").appendChild(table);
+    }
+
+    async function downloadPNG() {
+      const container = document.getElementById("chartContainer");
+      const canvas = await html2canvas(container);
+      const link = document.createElement("a");
+      link.download = "gas-profile.png";
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    async function downloadPDF() {
+      const container = document.getElementById("chartContainer");
+      const canvas = await html2canvas(container);
+      const imgData = canvas.toDataURL("image/png");
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+      pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
+      pdf.save("gas-profile.pdf");
+    }
+
+    drawChart();
+  </script>
+</body>
+</html>

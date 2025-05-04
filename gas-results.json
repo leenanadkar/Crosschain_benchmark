@@ -1,0 +1,18 @@
+{
+  "SimpleHTLC": {
+    "deploymentGas": 438493,
+    "executionGas": 77514
+  },
+  "RoleOrchestrated": {
+    "deploymentGas": 231692,
+    "executionGas": 46314
+  },
+  "ThresholdHTLC": {
+    "deploymentGas": 387357,
+    "executionGas": 45583
+  },
+  "MerkleRelay": {
+    "deploymentGas": 317839,
+    "executionGas": 23884
+  }
+}
