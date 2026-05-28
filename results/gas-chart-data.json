@@ -1,0 +1,20 @@
+{
+  "labels": [
+    "SimpleHTLC",
+    "RoleOrchestrated",
+    "ThresholdHTLC",
+    "MerkleRelay"
+  ],
+  "deploymentGas": [
+    438493,
+    231692,
+    394592,
+    317827
+  ],
+  "executionGas": [
+    77512.8,
+    46314,
+    45581.8,
+    23882.8
+  ]
+}

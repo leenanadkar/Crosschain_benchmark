@@ -1,0 +1,34 @@
+{
+  "SimpleHTLC": {
+    "runs": 10,
+    "deploymentGas": 438493,
+    "executionGas": 77512.8,
+    "deploymentGasStdDev": 0,
+    "executionGasStdDev": 3.6000000000000005,
+    "executionGasVsSimpleHTLCPct": 0
+  },
+  "RoleOrchestrated": {
+    "runs": 10,
+    "deploymentGas": 231692,
+    "executionGas": 46314,
+    "deploymentGasStdDev": 0,
+    "executionGasStdDev": 0,
+    "executionGasVsSimpleHTLCPct": -40.25
+  },
+  "ThresholdHTLC": {
+    "runs": 10,
+    "deploymentGas": 394592,
+    "executionGas": 45581.8,
+    "deploymentGasStdDev": 0,
+    "executionGasStdDev": 3.6000000000000005,
+    "executionGasVsSimpleHTLCPct": -41.19
+  },
+  "MerkleRelay": {
+    "runs": 10,
+    "deploymentGas": 317827,
+    "executionGas": 23882.8,
+    "deploymentGasStdDev": 0,
+    "executionGasStdDev": 3.6,
+    "executionGasVsSimpleHTLCPct": -69.19
+  }
+}

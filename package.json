@@ -1,0 +1,14 @@
+{
+  "name": "crosschain-benchmark",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reproducible EVM/Ganache gas benchmarks for cross-chain orchestration contract variants.",
+  "scripts": {
+    "compile": "truffle compile",
+    "test": "truffle test",
+    "benchmark:gas": "truffle test test/gasBenchmark.test.js",
+    "benchmark:summary": "node scripts/summarize-gas-results.js",
+    "plot:gas": "node scripts/write-gas-chart-data.js"
+  },
+  "devDependencies": {}
+}

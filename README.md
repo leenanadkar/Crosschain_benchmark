@@ -1,78 +1,138 @@
-Cross-Chain Smart Contract Gas Benchmarking
+# Cross-Chain Smart Contract Gas Benchmarking
 
-This project benchmarks and visualizes **deployment and execution gas usage** for various cross-chain smart contract orchestration mechanisms. It supports the research paper:
+This repository contains the reproducible EVM/Ganache contract-level benchmark
+used for the manuscript:
 
-“Cross-Chain Smart Contract Orchestration: A Novel Framework for Atomic and Consistent Execution Across Multi-Chain Ecosystems”
-Leena Nadkar, Dr. Prashasti Kanikar – NMIMS University, Mumbai
+> Cross-Chain Smart Contract Orchestration: A Prototype Framework for Atomic
+> Execution Across EVM-Compatible Blockchain Instances
 
----
+The current code evaluates four Solidity contract variants on a local Ganache
+EVM instance. It does not claim deployment on public testnets, non-EVM chains,
+or production heterogeneous networks.
 
-Overview
+## What Is Benchmarked
 
-The system simulates and measures gas consumption for different smart contract orchestration models:
-- **Deployment Gas** – Cost to deploy each contract
-- **Execution Gas** – Cost to invoke cross-chain functions
+| Code | Contract model | Function benchmarked |
+| --- | --- | --- |
+| 1 | Simple HTLC baseline | `lock()` |
+| 2 | Role-orchestrated access control | `grantRole()` |
+| 3 | Threshold HTLC commitment model | `lock()` |
+| 4 | Merkle root relay verifier | `verifyWithGas()` |
 
-## Smart Contract Models Benchmarked
+The benchmark measures:
 
-| Code | Mechanism                  | Function Benchmarked         |
-|------|----------------------------|-------------------------------|
-| 1    | Simple HTLC                | `lock()`                      |
-| 2    | Role-Orchestrated          | `grantRole()`                 |
-| 3    | Threshold Signature HTLC   | `lock()`                      |
-| 4    | Merkle Root Relay          | `verifyWithGas()`             |
+- deployment gas for each contract
+- execution gas for the selected representative function
+- percentage execution-gas change relative to `SimpleHTLC`
 
----
+## Repository Structure
 
+```text
+contracts/               Solidity contracts used by Truffle
+migrations/              Truffle deployment script
+test/                    Gas benchmark test
+scripts/                 Result summarization helpers
+results/                 Generated benchmark summaries/chart data
+gas-results.json         Raw gas output from the benchmark test
+gasChart.html            Browser chart for gas-results.json
+truffle-config.js        Local Ganache Truffle configuration
+```
 
-##  Setup Instructions
+The root-level Solidity and test files are retained for compatibility with the
+original upload, but the canonical Truffle paths are `contracts/`,
+`migrations/`, and `test/`.
 
-1. Install Truffle and dependencies
-npm install -g truffle
-npm install
-2. Compile contracts
-truffle compile
-3. Run benchmark tests
-truffle test ./test/gasBenchmark.test.js
-This generates the gas-results.json file with execution gas data.
+## Reproduction Environment
 
-Visualization Dashboard
-1. Serve the project directory
-npx http-server .
-OR
+The original manuscript audit was performed against commit:
+
+```text
+d54e3b7f55e79ae6fa78b01488233e865790c6ff
+```
+
+Use the latest commit on the `codex/reproducibility-reframe` branch for the
+revised reproducibility structure and n=10 gas benchmark output.
+
+Validated toolchain:
+
+- Node.js `18.20.5`
+- npm `10.8.2`
+- Truffle `5.11.5`
+- Ganache `7.9.2`
+- Solidity compiler resolved by Truffle from pragma `^0.8.0`
+
+## Reproduce The Gas Results
+
+Install Truffle and Ganache if they are not already available:
+
+```bash
+npm install -g truffle ganache
+```
+
+Start Ganache in a separate terminal:
+
+```bash
+ganache --host 127.0.0.1 --port 8545
+```
+
+Compile and run the benchmark:
+
+```bash
+npm run compile
+npm run benchmark:gas
+npm run benchmark:summary
+npm run plot:gas
+```
+
+The benchmark writes:
+
+- `gas-results.json`
+- `results/gas-summary.json`
+- `results/gas-chart-data.json`
+
+To view Figure 6.1, serve the repository directory and open `gasChart.html`:
+
+```bash
 python3 -m http.server 8080
-2. Open in browser
+```
+
+Then open:
+
+```text
 http://localhost:8080/gasChart.html
-3. Dashboard Features
-Deployment vs Execution gas bar chart
+```
 
+## Current Raw Results
 
-Output Files
-gas-results.json – Execution gas per contract
+Each contract/function pair is repeated `n=10` times by
+`test/gasBenchmark.test.js`. Gas is deterministic under a fixed EVM/compiler
+configuration, so standard deviations are zero or near-zero.
 
-gasChart.html – Dashboard file
+| Contract | Runs | Deployment gas mean | Deployment gas SD | Execution gas mean | Execution gas SD |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| SimpleHTLC | 10 | 438,493 | 0.0 | 77,512.8 | 3.6 |
+| RoleOrchestrated | 10 | 231,692 | 0.0 | 46,314.0 | 0.0 |
+| ThresholdHTLC | 10 | 394,592 | 0.0 | 45,581.8 | 3.6 |
+| MerkleRelay | 10 | 317,827 | 0.0 | 23,882.8 | 3.6 |
 
-gas-profile.png / gas-profile.pdf – Exported report
+MerkleRelay execution gas is 69.19% lower than the SimpleHTLC baseline for the
+representative function measured by `test/gasBenchmark.test.js`.
 
-Use Cases
--Blockchain academic research (Ethereum, IBC, Polkadot)
--Protocol optimization benchmarking
--Cross-chain smart contract efficiency comparisons
--Teaching and learning about gas costs
+## Scope And Limitations
 
-Research Context
-Nadkar, L. & Kanikar, P. (2025). Cross-Chain Smart Contract Orchestration: A Novel Framework for Atomic and Consistent Execution Across Multi-Chain Ecosystems.
-NMIMS University, Mumbai
+This repository supports contract-level gas profiling only. It does not provide
+scripts for latency, throughput, fault-tolerance, state-consistency, public
+testnet, non-EVM, or multi-region validator measurements. Those topics should be
+treated as design discussion or future work unless additional scripts and raw
+data are added.
 
-Built With
--Solidity
--Truffle
--Ganache
+## Built With
 
+- Solidity
+- Truffle
+- Ganache
 
-License
-MIT License – free for academic and research use. Please cite our paper when used in publications.
+## License
 
-Acknowledgements
-Thanks to the contributors, reviewers, and open-source communities that helped refine this work.
-
+MIT License. Please cite the manuscript if this benchmark is used in academic
+work.
