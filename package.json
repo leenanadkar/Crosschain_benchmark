@@ -1,0 +1,19 @@
+{
+  "name": "crosschain-benchmark",
+  "version": "1.0.0",
+  "description": "Gas benchmarking for cross-chain smart contract orchestration (Nadkar & Kanikar, JCMM 2025)",
+  "scripts": {
+    "test": "truffle test ./gasBenchmark.test.js",
+    "compile": "truffle compile",
+    "migrate": "truffle migrate --reset"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.3",
+    "web3": "^1.10.0"
+  },
+  "devDependencies": {
+    "truffle": "^5.11.5",
+    "ganache": "^7.9.1"
+  },
+  "license": "MIT"
+}
