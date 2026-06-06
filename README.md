@@ -61,7 +61,7 @@ Use Cases
 -Teaching and learning about gas costs
 
 Research Context
-Nadkar, L. & Kanikar, P. (2025). Cross-Chain Smart Contract Orchestration: A Novel Framework for Atomic and Consistent Execution Across Multi-Chain Ecosystems.
+Nadkar, L. & Kanikar, P. (2025). Cross-Chain Smart Contract Orchestration: A Prototype Framework for Atomic Execution Across EVM-Compatible Blockchain Instances.
 NMIMS University, Mumbai
 
 Built With
