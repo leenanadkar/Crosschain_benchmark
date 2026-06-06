@@ -1,3 +1,11 @@
+/**
+ * Gas Benchmark Test — n=10 repeated runs per contract
+ * Computes mean ± SD for execution gas across 10 identical calls.
+ * Outputs gas-results.json with per-contract mean, sd, and raw runs.
+ *
+ * Run: truffle test ./gasBenchmark.test.js
+ */
+
 const fs   = require("fs");
 const path = require("path");
 
@@ -95,45 +103,5 @@ contract("Gas Benchmark (n=10)", async (accounts) => {
     for (const [contract, data] of Object.entries(gasResults)) {
       console.log(`  ${contract}: ${data.mean} ± ${data.sd} gas`);
     }
-  });
-});
-    gasResults["RoleOrchestrated"] = {
-      deploymentGas: deployTx.gasUsed,
-      executionGas: tx.receipt.gasUsed
-    };
-  });
-
-  it("Code 3: ThresholdHTLC - deploy and measure gas", async () => {
-    const deployed = await ThresholdHTLC.new(signers, threshold);
-    const deployTx = await web3.eth.getTransactionReceipt(deployed.transactionHash);
-    const tx = await deployed.lock(commitment);
-
-    gasResults["ThresholdHTLC"] = {
-      deploymentGas: deployTx.gasUsed,
-      executionGas: tx.receipt.gasUsed
-    };
-  });
-
-  it("Code 4: MerkleRelay - deploy and measure gas", async () => {
-    const deployed = await MerkleRelay.new(dummyMerkleRoot);
-    const deployTx = await web3.eth.getTransactionReceipt(deployed.transactionHash);
-    const leaf = web3.utils.sha3("leaf");
-    const proof = [];
-    const root = dummyMerkleRoot;
-
-    const tx = await deployed.verifyWithGas(proof, leaf, root);
-
-    gasResults["MerkleRelay"] = {
-      deploymentGas: deployTx.gasUsed,
-      executionGas: tx.receipt.gasUsed
-    };
-  });
-
-  after(async () => {
-    fs.writeFileSync(
-      path.join(__dirname, "../gas-results.json"),
-      JSON.stringify(gasResults, null, 2)
-    );
-    console.log(" gas-results.json written.");
   });
 });
