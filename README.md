@@ -2,7 +2,7 @@ Cross-Chain Smart Contract Gas Benchmarking
 
 This project benchmarks and visualizes **deployment and execution gas usage** for various cross-chain smart contract orchestration mechanisms. It supports the research paper:
 
-“Cross-Chain Smart Contract Orchestration: A Novel Framework for Atomic and Consistent Execution Across Multi-Chain Ecosystems”
+“Cross-Chain Smart Contract Orchestration: A Prototype Framework for Atomic Execution Across EVM-Compatible Blockchain Instances”
 Leena Nadkar, Dr. Prashasti Kanikar – NMIMS University, Mumbai
 
 ---
@@ -33,7 +33,7 @@ npm install
 2. Compile contracts
 truffle compile
 3. Run benchmark tests
-truffle test ./test/gasBenchmark.test.js
+truffle test ./gasBenchmark.test.js
 This generates the gas-results.json file with execution gas data.
 
 Visualization Dashboard
