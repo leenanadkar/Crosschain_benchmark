@@ -1,65 +1,103 @@
-const fs = require("fs");
+/**
+ * Gas Benchmark Test — n=10 repeated runs per contract
+ * Computes mean +/- SD for execution gas across 10 identical calls.
+ * Outputs gas-results.json with per-contract mean, sd, and raw runs.
+ *
+ * Run: truffle test ./gasBenchmark.test.js
+ */
+
+const fs   = require("fs");
 const path = require("path");
-const SimpleHTLC = artifacts.require("SimpleHTLC");
+
+const SimpleHTLC       = artifacts.require("SimpleHTLC");
 const RoleOrchestrated = artifacts.require("RoleOrchestrated");
-const ThresholdHTLC = artifacts.require("ThresholdHTLC");
-const MerkleRelay = artifacts.require("MerkleRelay");
+const ThresholdHTLC    = artifacts.require("ThresholdHTLC");
+const MerkleRelay      = artifacts.require("MerkleRelay");
+
 const N_RUNS = 10;
-function mean(arr) { return arr.reduce((a,b)=>a+b,0)/arr.length; }
-function sd(arr) { const m=mean(arr); return Math.sqrt(arr.reduce((s,x)=>s+Math.pow(x-m,2),0)/arr.length); }
+
+function mean(arr) {
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function sd(arr) {
+  const m = mean(arr);
+  const variance = arr.reduce((sum, x) => sum + Math.pow(x - m, 2), 0) / arr.length;
+  return Math.sqrt(variance);
+}
+
 contract("Gas Benchmark (n=10)", async (accounts) => {
   const gasResults = {};
-  const hashlock = web3.utils.sha3("benchmark-secret");
-  const timelock = 300;
-  const signers = [accounts[1], accounts[2]];
-  const threshold = 2;
-  const role = web3.utils.keccak256("ORCHESTRATOR");
-  const dummyRoot = web3.utils.sha3("dummy-root");
+
+  const hashlock   = web3.utils.sha3("benchmark-secret");
+  const timelock   = 300;
+  const threshold  = 2;
+  const signers    = [accounts[1], accounts[2]];
+  const commitment = web3.utils.sha3("threshold-lock");
+  const dummyRoot  = web3.utils.sha3("dummy-root");
+
   it("Code 1: SimpleHTLC - 10 runs of lock()", async () => {
     const runs = [];
-    for (let i=0;i<N_RUNS;i++) {
-      const d = await SimpleHTLC.new(hashlock, timelock);
-      const tx = await d.lock(web3.utils.sha3("secret"+i), accounts[1], 100);
+    for (let i = 0; i < N_RUNS; i++) {
+      const deployed = await SimpleHTLC.new(hashlock, timelock);
+      const tx = await deployed.lock(web3.utils.sha3("secret" + i), accounts[1], 100);
       runs.push(tx.receipt.gasUsed);
     }
-    gasResults["SimpleHTLC"] = { mean: parseFloat(mean(runs).toFixed(1)), sd: parseFloat(sd(runs).toFixed(1)), runs };
-    console.log("SimpleHTLC mean:", mean(runs).toFixed(1), "sd:", sd(runs).toFixed(1));
+    const m = mean(runs);
+    const s = sd(runs);
+    console.log("SimpleHTLC mean: " + m.toFixed(1) + " sd: " + s.toFixed(1));
+    gasResults["SimpleHTLC"] = { mean: parseFloat(m.toFixed(1)), sd: parseFloat(s.toFixed(1)), runs };
   });
+
   it("Code 2: RoleOrchestrated - 10 runs of grantRole()", async () => {
-    const d = await RoleOrchestrated.new();
+    const deployed = await RoleOrchestrated.new();
     const runs = [];
-    for (let i=0;i<N_RUNS;i++) {
-      const r = web3.utils.keccak256("ROLE_"+i);
-      const tx = await d.grantRole(r, accounts[1]);
+    for (let i = 0; i < N_RUNS; i++) {
+      const r = web3.utils.keccak256("ROLE_" + i);
+      const tx = await deployed.grantRole(r, accounts[1]);
       runs.push(tx.receipt.gasUsed);
     }
-    gasResults["RoleOrchestrated"] = { mean: parseFloat(mean(runs).toFixed(1)), sd: parseFloat(sd(runs).toFixed(1)), runs };
-    console.log("RoleOrchestrated mean:", mean(runs).toFixed(1), "sd:", sd(runs).toFixed(1));
+    const m = mean(runs);
+    const s = sd(runs);
+    console.log("RoleOrchestrated mean: " + m.toFixed(1) + " sd: " + s.toFixed(1));
+    gasResults["RoleOrchestrated"] = { mean: parseFloat(m.toFixed(1)), sd: parseFloat(s.toFixed(1)), runs };
   });
+
   it("Code 3: ThresholdHTLC - 10 runs of lock()", async () => {
-    const d = await ThresholdHTLC.new(signers, threshold);
+    const deployed = await ThresholdHTLC.new(signers, threshold);
     const runs = [];
-    for (let i=0;i<N_RUNS;i++) {
-      const c = web3.utils.sha3("commitment-"+i);
-      const tx = await d.lock(c);
+    for (let i = 0; i < N_RUNS; i++) {
+      const c = web3.utils.sha3("commitment-" + i);
+      const tx = await deployed.lock(c);
       runs.push(tx.receipt.gasUsed);
     }
-    gasResults["ThresholdHTLC"] = { mean: parseFloat(mean(runs).toFixed(1)), sd: parseFloat(sd(runs).toFixed(1)), runs };
-    console.log("ThresholdHTLC mean:", mean(runs).toFixed(1), "sd:", sd(runs).toFixed(1));
+    const m = mean(runs);
+    const s = sd(runs);
+    console.log("ThresholdHTLC mean: " + m.toFixed(1) + " sd: " + s.toFixed(1));
+    gasResults["ThresholdHTLC"] = { mean: parseFloat(m.toFixed(1)), sd: parseFloat(s.toFixed(1)), runs };
   });
+
   it("Code 4: MerkleRelay - 10 runs of verifyWithGas()", async () => {
-    const d = await MerkleRelay.new(dummyRoot);
+    const deployed = await MerkleRelay.new(dummyRoot);
     const runs = [];
-    for (let i=0;i<N_RUNS;i++) {
-      const leaf = web3.utils.sha3("leaf-"+i);
-      const tx = await d.verifyWithGas([], leaf, dummyRoot);
+    for (let i = 0; i < N_RUNS; i++) {
+      const leaf = web3.utils.sha3("leaf-" + i);
+      const tx = await deployed.verifyWithGas([], leaf, dummyRoot);
       runs.push(tx.receipt.gasUsed);
     }
-    gasResults["MerkleRelay"] = { mean: parseFloat(mean(runs).toFixed(1)), sd: parseFloat(sd(runs).toFixed(1)), runs };
-    console.log("MerkleRelay mean:", mean(runs).toFixed(1), "sd:", sd(runs).toFixed(1));
+    const m = mean(runs);
+    const s = sd(runs);
+    console.log("MerkleRelay mean: " + m.toFixed(1) + " sd: " + s.toFixed(1));
+    gasResults["MerkleRelay"] = { mean: parseFloat(m.toFixed(1)), sd: parseFloat(s.toFixed(1)), runs };
   });
+
   after(async () => {
-    fs.writeFileSync(path.join(__dirname, "gas-results.json"), JSON.stringify(gasResults, null, 2));
-    console.log("\ngas-results.json written.");
+    const outPath = path.join(__dirname, "gas-results.json");
+    fs.writeFileSync(outPath, JSON.stringify(gasResults, null, 2));
+    console.log("gas-results.json written to " + outPath);
+    console.log("Summary:");
+    for (const [contract, data] of Object.entries(gasResults)) {
+      console.log("  " + contract + ": " + data.mean + " +/- " + data.sd + " gas");
+    }
   });
 });
